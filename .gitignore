@@ -2,3 +2,4 @@
 .idea
 *.py[cod]
 /log/
+/base/config.ini

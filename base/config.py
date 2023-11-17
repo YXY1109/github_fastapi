@@ -5,4 +5,4 @@ if IS_DEBUG:
     RUN_PORT = 5000
 else:
     RUN_HOST = "xxx.xxx.xxx.xxx"  # 内网103
-    RUN_PORT = 50001
+    RUN_PORT = 5001

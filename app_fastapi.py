@@ -58,7 +58,7 @@ if __name__ == '__main__':
         uvicorn.run(app="app_fastapi:app", host=RUN_HOST, port=RUN_PORT, reload=IS_DEBUG)
     else:
         print("服务器使用命令行启动")
-        # 正式使用
+        # 正式使用，后台服务
         # gunicorn app_fastapi:app -c gunicorn.py
-        # 调试使用
+        # 调试使用，前台服务
         # uvicorn.run(app="app_fastapi:app", host=RUN_HOST, port=RUN_PORT, reload=IS_DEBUG)
