@@ -52,13 +52,5 @@ def get_today_time(day=0, is_zero=False):
     return today_time
 
 
-# async def get_df_from_ck(client, ck_sql, columns):
-#     print(1)
-#     data_result = await client.fetch(ck_sql)
-#     print(2)
-#     df_data = pd.DataFrame(data_result, columns=columns)
-#     return df_data
-
-
 if __name__ == '__main__':
     print(get_today_time())

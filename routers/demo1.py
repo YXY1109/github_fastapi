@@ -18,9 +18,9 @@ def text_review(demo: Demo):
     return {"msg": demo.name}
 
 
-@router.post("/test_ck", summary="协程CK")
+@router.post("/test_ck", summary="aioclickhouse")
 @logger.catch
-async def text_review(demo: Demo):
+async def test_ck(demo: Demo):
     """
     接口详细信息 \n
     数据库依赖注入使用 \n
@@ -32,3 +32,15 @@ async def text_review(demo: Demo):
     df_user = await get_df_from_ck(sql_user, ["tid", "appid"])
     my_print(f"df_user:{df_user}")
     return {"msg": demo.name}
+
+
+@router.post("/test_mysql", summary="aiomysql")
+@logger.catch
+async def test_ck(demo: Demo):
+    pass
+
+
+@router.post("/test_http", summary="aiohttp")
+@logger.catch
+async def test_ck(demo: Demo):
+    pass
