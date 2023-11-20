@@ -31,7 +31,7 @@ async def get_df_from_ck(ck_sql, columns):
 async def get_df_from_mysql_sqlalchemy(mysql_sql):
     """
     https://github.com/aio-libs/aiomysql/discussions/908
-    不可用
+    不可用，还需要修改代码，比较麻烦
     :param mysql_sql:
     :return:
     """
@@ -62,3 +62,16 @@ async def get_df_from_mysql_pool(mysql_sql):
 
     # pool.close()
     # await pool.wait_closed()
+
+
+async def get_mysql_pool():
+    pool = await aiomysql.create_pool(host=mysql_host, port=int(mysql_port),
+                                      user=mysql_user, password=mysql_password,
+                                      db=mysql_db)
+    try:
+        print(111)
+        yield pool
+    finally:
+        print(222)
+        pool.close()
+        await pool.wait_closed()
