@@ -7,7 +7,7 @@ from loguru import logger
 from starlette.staticfiles import StaticFiles
 
 from base.config import IS_DEBUG, RUN_HOST, RUN_PORT
-from routers import demo1
+from routers import db_demo, http_demo, normal_demo
 from utils.common import ORJSONResponse
 
 
@@ -49,8 +49,10 @@ async def lifespan(app_life: FastAPI):
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 水印
-app.include_router(demo1.router)
+# 子路由
+app.include_router(db_demo.router)
+app.include_router(http_demo.router)
+app.include_router(normal_demo.router)
 
 if __name__ == '__main__':
     if IS_DEBUG:
