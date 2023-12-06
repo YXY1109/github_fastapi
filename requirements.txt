@@ -9,3 +9,4 @@ requests==2.31.0
 httpx==0.25.1
 aiomysql==0.2.0
 sqlalchemy==2.0.23
+redis==5.0.1

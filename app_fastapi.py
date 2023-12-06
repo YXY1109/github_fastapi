@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 
+# import redis #同步
+import redis.asyncio as redis  # 异步
 import uvicorn
 from fastapi import FastAPI, applications
 from fastapi.openapi.docs import get_swagger_ui_html
@@ -7,7 +9,7 @@ from loguru import logger
 from starlette.staticfiles import StaticFiles
 
 from base.config import IS_DEBUG, RUN_HOST, RUN_PORT
-from routers import db_demo, http_demo, normal_demo
+from routers import db_demo, http_demo, normal_demo, redis_demo
 from utils.common import ORJSONResponse
 
 
@@ -40,10 +42,20 @@ logger.add(
 @asynccontextmanager
 async def lifespan(app_life: FastAPI):
     # 第二步：为app注册一个公共的日志记录器
-    app_life.state.logger = logger
+    app_life.logger = logger
+
+    print("redis连接")
+    # https://redis.readthedocs.io/en/stable/examples/asyncio_examples.html
+    pool = redis.ConnectionPool.from_url("redis://@127.0.0.1:6379/0", max_connections=10,
+                                         decode_responses=True)
+    rc = redis.Redis.from_pool(pool)
+    app_life.rc = rc
     yield
     # 第四步：清除日志记录器
-    app_life.state.logger.remove()
+    app_life.logger.remove()
+
+    print("异步关闭redis连接")
+    await rc.close()
 
 
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
@@ -53,6 +65,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(db_demo.router)
 app.include_router(http_demo.router)
 app.include_router(normal_demo.router)
+app.include_router(redis_demo.router)
 
 if __name__ == '__main__':
     if IS_DEBUG:
