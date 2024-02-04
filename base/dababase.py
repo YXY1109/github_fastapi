@@ -3,9 +3,14 @@ import pandas as pd
 from aiochclient import ChClient
 from aiohttp import ClientSession
 from aiomysql.sa import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from base import mysql_user, mysql_db, mysql_host, mysql_password, mysql_port
 from utils.config import global_config
+
+SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_db}"
+# 输出执行的SQL语句
+SQLALCHEMY_ECHO = False
 
 
 async def get_df_from_ck(ck_sql, columns):
@@ -75,3 +80,40 @@ async def get_mysql_pool():
         print(222)
         pool.close()
         await pool.wait_closed()
+
+
+def get_engine():
+    my_engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO, pool_size=20,
+                              pool_recycle=60, pool_pre_ping=True, max_overflow=10)
+    return my_engine
+
+
+def get_session_1():
+    """
+    方式一，需要自己维护关闭
+    :return:
+    """
+    session = sessionmaker(bind=get_engine())
+    # 线程安全
+    my_session = scoped_session(session)
+    return my_session
+
+
+def get_session_2():
+    """
+    方式二，不需要维护
+    :return:
+    """
+    session = sessionmaker(bind=get_engine())
+    # 线程安全
+    my_session = scoped_session(session)
+
+    # https://copyprogramming.com/howto/how-to-correctly-use-sqlalchemy-within-fastapi-or-arq-for-mysql
+    # https://www.cnblogs.com/ChangAn223/p/11277468.html
+    # https://sunnyingit.github.io/book/section_python/SQLalchemy-engine.html
+    try:
+        yield my_session
+    finally:
+        print("主动关闭session")
+        my_session.close()
+    # 方式二使用：get_session().__next__()
