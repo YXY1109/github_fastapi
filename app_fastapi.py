@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI, applications
 from fastapi.openapi.docs import get_swagger_ui_html
 from loguru import logger
+from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
 from base.config import IS_DEBUG, RUN_HOST, RUN_PORT
@@ -66,6 +67,26 @@ app.include_router(db_demo.router)
 app.include_router(http_demo.router)
 app.include_router(normal_demo.router)
 app.include_router(redis_demo.router)
+
+# 处理跨域
+# 这里配置支持跨域访问的前端地址
+origins = [
+    "http://192.168.170.36",
+    "http://192.168.170.36:8080",
+    "http://192.168.180.239",
+    "http://192.168.180.239:8088",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    # 这里配置允许跨域访问的前端地址
+    allow_origins=origins,
+    # 跨域请求是否支持 cookie， 如果这里配置true，则allow_origins不能配置*
+    allow_credentials=True,
+    # 支持跨域的请求类型，可以单独配置get、post等，也可以直接使用通配符*表示支持所有
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == '__main__':
     if IS_DEBUG:
