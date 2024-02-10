@@ -14,3 +14,5 @@ torch==2.2.0
 torchvision==0.17.0
 cn_clip==1.5.1
 pymilvus==2.2.8
+pypinyin==0.50.0
+moviepy==1.0.3

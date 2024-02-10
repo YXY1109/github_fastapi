@@ -10,6 +10,7 @@ from base import MILVUS_HOST, MILVUS_PORT, MILVUS_COLLECTION
 from base.config import CLIP_DOWNLOAD_PATH
 from base.dababase import get_session_2
 from base.sql_model import Video
+from utils.common import chinese_to_pinyin
 
 
 def get_chinese_clip():
@@ -108,6 +109,20 @@ class ChineseCLIPMilvusTools:
             self.success = False
             print(f"创建Milvus集合：{self.coll_name}失败: {e}")
 
+    def create_partition(self, partition_name):
+        """
+        创建分区
+        :param partition_name: 可能是中文，转为拼音
+        :return:
+        """
+        partition_name = chinese_to_pinyin(partition_name)
+        collection = self.load_collection()
+        if collection.has_partition(partition_name):
+            print(f"集合：{self.coll_name}已经存在分区：{partition_name}，跳过")
+        else:
+            collection.create_partition(partition_name=partition_name)
+            print(f"集合：{self.coll_name}创建分区：{partition_name}成功")
+
     # 加载集合
     def load_collection(self, coll_name=''):
         connections.connect(host=self.host, port=self.port)
@@ -202,6 +217,45 @@ class ChineseCLIPMilvusTools:
         }
         search_results = collection.search(**search_param)
         return ChineseCLIPMilvusTools.get_id_distance(search_results)
+
+    @staticmethod
+    def get_search_list(results):
+        frame_id_list = []
+        if len(results) > 0:
+            hits = results[0]
+            dis_list = hits.distances
+            print(f"对应的距离：{dis_list}")
+            for hit in hits:
+                # distance=0.01
+                frame_id = hit.entity.get("frame_id")
+                frame_id_list.append(frame_id)
+        # frame_id_list.reverse()
+        print(f"对应的图片帧ID：{frame_id_list}")
+        return frame_id_list
+
+    # 图片搜索图片
+    def pic_search(self, pic_path, partition_names):
+        # 图片特征
+        if isinstance(pic_path, str):
+            pic_features = self.extract_image_features(pic_path)
+            # print(f"pic_features:{pic_features}")
+            print(f"pic_features:{pic_features.shape}")
+        else:
+            print(f"pic_path:{pic_path}")
+            print(f"pic_path:{pic_path.shape}")
+
+            pic_path /= pic_path.norm(dim=-1, keepdim=True)
+            pic_features = pic_path.cpu().numpy()[0]
+        # 加载向量库
+        collection = self.load_collection()
+        # 执行搜索
+        search_params = {"metric_type": "L2", "params": {"nprobe": 10}}
+        search_results = collection.search(data=[pic_features], anns_field="frame_embedding", param=search_params,
+                                           limit=2, output_fields=['video_id', 'video_name', 'frame_id'],
+                                           partition_names=[partition_names])
+        print(f"图片搜索图片完成，结果：{search_results}")
+        id_list = self.get_search_list(search_results)
+        return id_list
 
 
 if __name__ == '__main__':

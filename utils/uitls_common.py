@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta
 import time
 
 from loguru import logger
 from orjson import orjson
 from pydantic import typing
+from pypinyin import lazy_pinyin
 from starlette.responses import JSONResponse
 
 
@@ -39,18 +39,15 @@ def timer(func):
     return wrapper
 
 
-def get_today_time(day=0, is_zero=False):
+def chinese_to_pinyin(chine_str):
     """
-    获取今天的时间
+    中文转拼音
+    :param chine_str:
+    :return:
     """
-    today = datetime.today() - timedelta(days=day)
-    if is_zero:
-        time_format = '%Y-%m-%d 00:00:00'
-    else:
-        time_format = '%Y-%m-%d %H:%M:%S'
-    today_time = today.strftime(time_format)
-    return today_time
+    result = "_".join(lazy_pinyin(chine_str))
+    return result
 
 
 if __name__ == '__main__':
-    print(get_today_time())
+    pass
