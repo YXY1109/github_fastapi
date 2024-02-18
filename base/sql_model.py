@@ -56,6 +56,20 @@ class Behavior(BaseTime):
         return f"行为表：{self.behavior_type}"
 
 
+class WorkBenches(BaseTime):
+    __tablename__ = 'work_benches'
+
+    id = Column(Integer, primary_key=True, autoincrement=True, comment="主键，自增")
+    video_id = Column(Integer, ForeignKey("video.id"), comment="视频id")
+    video = relationship(Video, backref="work_benches")
+    status_flag = Column(SmallInteger, default=0, comment="状态标记：0-未删除，1-已删除")
+    name = Column(String(50), nullable=True, comment="素材名称")
+    crop_name = Column(String(50), nullable=True, comment="作品名称")
+    status = Column(SmallInteger, nullable=False, default=0,
+                    comment="状态：0=上传中；1=上传完成；2=上传失败；3=生成中；4=生成完成；5=生成失败")
+    type_flag = Column(SmallInteger, default=0, comment="类型，0-素材，1-作品")
+
+
 def create_all():
     # 创建表
     Base.metadata.create_all(my_engine)
