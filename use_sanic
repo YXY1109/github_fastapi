@@ -1,0 +1,26 @@
+def model_encode(input_words):
+    """
+    调用bge模型
+    """
+    input_words_flag = input_words
+    if isinstance(input_words, str):
+        input_words = [input_words]
+    url = "http://appservice.aios.catl.com:32120/bge/bge_embedding"
+    payload = json.dumps({"sentences": input_words})
+    headers = {
+        'AccessCode': '4pfjrqyy4cqc1ipq',
+        'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload, timeout=10)
+        base64_data = json.loads(response.content)["data"]['embeddings']
+        original_shape = tuple(eval(json.loads(response.content)["data"]['original_shape']))
+        binary_data = base64.b64decode(base64_data)
+        embeddings_array = np.frombuffer(binary_data, dtype=np.float32)
+        embeddings_array = embeddings_array.reshape(original_shape)
+        if isinstance(input_words_flag, str):
+            embeddings_array = embeddings_array[0]
+        return embeddings_array
+    except Exception as e:
+        pass
+    logger.error('3次调用BGE均未拿到结果')
