@@ -47,3 +47,6 @@
 - 查看日志输出
 
 > tail -f log/gunicorn_error.log
+
+
+### 有些过时了，现在使用cicd一键部署了
